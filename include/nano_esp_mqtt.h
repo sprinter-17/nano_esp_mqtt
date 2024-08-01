@@ -16,5 +16,7 @@ bool setTime();
 bool connectToWiFi(const char* ssid, const char* pwd);
 bool connectToMQTT_Broker(AWS_Credentials credentials);
 bool sendMessage(const char* topic, const char* message);
+void checkIncoming();
+bool subscribe(const char* topic,  void (* action)(const char* message));
 
 #endif

@@ -1,7 +1,7 @@
 #include <Arduino.h>
+#include <PubSubClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <PubSubClient.h>
 
 #include "nano_esp_mqtt.h"
 
@@ -9,6 +9,28 @@ const u_long TIMEOUT = 10000;
 
 WiFiClientSecure secureClient;
 PubSubClient mqttClient(secureClient);
+
+const u_int MAX_TOPIC_SUBSCRIPTIONS = 5;
+u_int subscriptionCount = 0;
+struct {
+    const char *topic;
+    void (*action)(const char *message);
+} subscriptions[MAX_TOPIC_SUBSCRIPTIONS];
+
+void callback(const char *topic, byte *payload, unsigned int length) {
+    // only supports string payloads so add null terminator
+    payload[length] = '\0';
+    Serial.print(F("Received message for topic "));
+    Serial.print(topic);
+    Serial.print(F(": "));
+    Serial.println((const char *)payload);
+    for (u_int i = 0; i < subscriptionCount; i++) {
+        if (strcmp(topic, subscriptions[i].topic) == 0) {
+            (*subscriptions[i].action)((const char *)payload);
+            return;
+        }
+    }
+}
 
 bool connectToWiFi(const char *ssid, const char *pwd) {
     Serial.print(F("Connecting to WiFi AP "));
@@ -81,12 +103,28 @@ bool connectToMQTT_Broker(AWS_Credentials credentials) {
     } else {
         Serial.println(F("Timeout"));
         return false;
-    }    
+    }
 }
 
-bool sendMessage(const char* topic, const char* message) {
+bool sendMessage(const char *topic, const char *message) {
     if (!mqttClient.connected())
         return false;
 
     return mqttClient.publish(topic, message);
+}
+
+bool subscribe(const char *topic, void (*action)(const char *message)) {
+    Serial.print(F("Subscribing to topic "));
+    Serial.println(topic);
+    if (subscriptionCount == MAX_TOPIC_SUBSCRIPTIONS) {
+        Serial.println(F("Max subscriptions reached"));
+        return false;
+    }
+    subscriptions[subscriptionCount++] = {topic, action};
+    mqttClient.setCallback(callback);
+    return mqttClient.subscribe(topic);
+}
+
+void checkIncoming() {
+    mqttClient.loop();
 }
