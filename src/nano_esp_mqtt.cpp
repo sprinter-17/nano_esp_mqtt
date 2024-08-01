@@ -17,6 +17,9 @@ struct {
     void (*action)(const char *message);
 } subscriptions[MAX_TOPIC_SUBSCRIPTIONS];
 
+static const u_int MAX_TIMESTAMP_LENGTH = 30;
+char timestamp[MAX_TIMESTAMP_LENGTH];
+
 void callback(const char *topic, byte *payload, unsigned int length) {
     // only supports string payloads so add null terminator
     payload[length] = '\0';
@@ -65,12 +68,16 @@ bool setTime() {
         Serial.print(".");
         time(&now);
     }
-    struct tm timeinfo;
-    gmtime_r(&now, &timeinfo);
     Serial.println();
-    Serial.print(F("Current GMT: "));
-    Serial.print(asctime(&timeinfo));
+    Serial.print(F("Current time: "));
+    Serial.println(getTime());
     return true;
+}
+
+const char *getTime() {
+    time_t now = time(nullptr);
+    strftime(timestamp, MAX_TIMESTAMP_LENGTH, "%Y-%m-%d %H:%M:%S", localtime(&now));
+    return timestamp;
 }
 
 bool connectToMQTT_Broker(AWS_Credentials credentials) {

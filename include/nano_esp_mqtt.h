@@ -13,6 +13,7 @@ typedef struct {
 } AWS_Credentials;
 
 bool setTime();
+const char* getTime();
 bool connectToWiFi(const char* ssid, const char* pwd);
 bool connectToMQTT_Broker(AWS_Credentials credentials);
 bool sendMessage(const char* topic, const char* message);

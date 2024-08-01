@@ -2,6 +2,7 @@
 
 #include "nano_esp_mqtt.h"
 #include "secrets.h"
+#include "time.h"
 
 bool success = true;
 
@@ -26,9 +27,10 @@ void setup() {
 void loop() {
     checkIncoming();
     if (millis() % 10000 == 0) {
-        char message[50];
+        char message[100];
         Serial.println("sending test message");
-        sprintf(message, "{\"sensor_id\": \"%s\", \"message_num\": %d}", AWS_THING_ID, message_num++);
+        sprintf(message, "{\"sensor_id\": \"%s\", \"timestamp\": \"%s\", \"temperature\": %d}", 
+            AWS_THING_ID, getTime(), message_num++);
         sendMessage("test_topic", message);
     }
 }
