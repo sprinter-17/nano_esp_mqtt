@@ -12,9 +12,9 @@ typedef struct {
     const char* thing_id;
 } AWS_Credentials;
 
+bool connectToWiFi(const char* ssid, const char* pwd);
 bool setTime();
 const char* getTime();
-bool connectToWiFi(const char* ssid, const char* pwd);
 bool connectToMQTT_Broker(AWS_Credentials credentials);
 bool sendMessage(const char* topic, const char* message);
 void checkIncoming();
