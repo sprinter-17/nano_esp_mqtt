@@ -23,7 +23,7 @@ void setup() {
 void loop() {
     char message[50];
     Serial.println("sending test message");
-    sprintf(message, "{\"foo\": %d}", message_num++);
+    sprintf(message, "{\"sensor_id\": 5, \"message_num\": %d}", message_num++);
     sendMessage("test_topic", message);
     delay(10000);
 }
